@@ -271,17 +271,12 @@ body::before {
   <!-- Collection Tabs -->
   
   <div class="filter" style="padding-bottom:0;">
-    <button class="filter__item" data-coll="xiaoxiaodong">小小东</button>
-    <span class="filter__sep">·</span>
     <button class="filter__item filter__item--active" data-coll="adrian-punk">AdrianPunk115</button>
   </div>
   
 
   <!-- Hero -->
-  <div class="hero" data-collection="xiaoxiaodong" style="display:none">
-    <div class="hero__quote">「提示词写作的核心不是技巧，<br>而是敢于想象 + 敢于实施」</div>
-    <div class="hero__author">— 小小东</div>
-  </div>
+  
   <div class="hero" data-collection="adrian-punk">
     <div class="hero__quote">「中文字体提示词，不是让 AI 写几个字，<br>而是让 AI 设计一组字」</div>
     <div class="hero__author">— Adrian Punk · 《2026 文字类提示词设计指南》</div>
@@ -1788,7 +1783,7 @@ body::before {
 
   <!-- Footer -->
   <div class="footer">
-    <a href="https://x.com/xiaoxiaodong01" target="_blank">xiaoxiaodong01</a> · <a href="https://x.com/AdrianPunk115" target="_blank">AdrianPunk115</a> · dong · 2026
+    <a href="https://x.com/AdrianPunk115" target="_blank">AdrianPunk115</a> · 2026
     · <a href="/wisdom/">📜 每日箴言</a>
   </div>
 </div>
@@ -2059,7 +2054,7 @@ body::before {
 
 <script>
 // Collection tab switching
-let activeColl = localStorage.getItem('pg_tab') || 'xiaoxiaodong';
+let activeColl = localStorage.getItem('pg_tab') || 'adrian-punk';
 
 function saveTab(el) {
   localStorage.setItem('pg_tab', activeColl);
