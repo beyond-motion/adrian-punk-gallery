@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adrian Punk · 提示词画廊</title>
+<style>
+/* === V3 清透呼吸美学 === */
+:root {
+  --bg: #f7f5f2;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f2ef;
+  --border: #e8e4df;
+  --text: #5a5550;
+  --text-muted: #a09890;
+  --text-meta: #b8b0a8;
+  --broth: #f5f0eb;
+  --broth-border: #c4a87a;
+  --spice: #eff1f0;
+  --spice-border: #8ba8a4;
+  --catalyst: #f2eeeb;
+  --catalyst-border: #c0988a;
+  --avoid-text: #b07070;
+  --accent: #c4a87a;
+  --accent-colophon: #c4bba8;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper fiber noise texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Layout --- */
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 24px 0 12px;
+}
+.header__title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.header__stats {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.header__line {
+  border: none;
+  border-top: 1px solid var(--accent);
+  opacity: 0.5;
+}
+
+/* --- Hero --- */
+.hero {
+  padding: 48px 0 32px;
+  text-align: center;
+}
+.hero__quote {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 16px;
+  line-height: 2;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.hero__author {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.hero__today {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.hero__today-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.hero__today-title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 4px;
+}
+.hero__today-sub {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* --- Filter --- */
+.filter {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 24px 0;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+.filter__item {
+  cursor: pointer;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  transition: color 0.2s;
+}
+.filter__item:hover,
+.filter__item--active {
+  color: var(--text);
+}
+.filter__item--active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--accent);
+}
+.filter__sep {
+  color: var(--accent);
+  opacity: 0.5;
+  user-select: none;
+}
+
+/* --- Date divider --- */
+.date-divider {
+  text-align: center;
+  padding: 32px 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+  letter-spacing: 0.1em;
+}
+
+/* --- Card grid --- */
+.grid {
+  columns: 3;
+  column-gap: 24px;
+}
+@media (max-width: 1024px) { .grid { columns: 2; } }
+@media (max-width: 640px) { .grid { columns: 1; } }
+
+.card {
+  break-inside: avoid;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.card:hover {
+  background: var(--bg-hover);
+}
+.card__img {
+  width: 100%;
+  display: block;
+}
+.card__body {
+  padding: 16px;
+}
+.card__num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.card__title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 15px;
+  color: var(--text);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.card__line {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
+}
+.card__meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.card__noimg {
+  aspect-ratio: 3/2;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 13px;
+  color: var(--text-meta);
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 48px 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-colophon);
+  letter-spacing: 0.08em;
+}
+.footer a {
+  color: inherit;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- Header -->
+  <header class="header">
+    <span class="header__title">提示词画廊</span>
+    <span class="header__stats">219 · 108 · ongoing</span>
+  </header>
+  <hr class="header__line">
+
+  <!-- Collection Tabs -->
+  
+  <div class="filter" style="padding-bottom:0;">
+    
+    <button class="filter__item filter__item--active" data-coll="xiaoxiaodong">小小东</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item " data-coll="adrian-punk">AdrianPunk115</button>
+    
+    
+  </div>
+  
+
+  <!-- Hero -->
+  <div class="hero" data-collection="xiaoxiaodong">
+    <div class="hero__quote">「提示词写作的核心不是技巧，<br>而是敢于想象 + 敢于实施」</div>
+    <div class="hero__author">— 小小东</div>
+    
+    <div class="hero__today">
+      <div class="hero__today-label">today · #116 · 民国名媛淡彩仕女</div>
+      <div class="hero__today-sub">窗外风景会为你尽情演绎</div>
+    </div>
+    
+  </div>
+  <div class="hero" data-collection="adrian-punk" style="display:none">
+    <div class="hero__quote">「中文字体提示词，不是让 AI 写几个字，<br>而是让 AI 设计一组字」</div>
+    <div class="hero__author">— Adrian Punk · 《2026 文字类提示词设计指南》</div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter">
+    <button class="filter__item filter__item--active" data-cat="全部">全部</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="人物肖像">人物肖像</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="美学实验">美学实验</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="海报设计">海报设计</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="字体创意设计">字体创意设计</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="图片风格转换">图片风格转换</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="童趣商业字体">童趣商业字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="商业咨询视觉">商业咨询视觉</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="建筑空间体">建筑空间体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="运动竞技体">运动竞技体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="机械工业体">机械工业体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="硬笔书写体">硬笔书写体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="信息可视化">信息可视化</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="品牌设计">品牌设计</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="城市商业招牌体">城市商业招牌体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="国潮体">国潮体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="西部手写字体">西部手写字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="毛笔字">毛笔字</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="PPT 演示">PPT 演示</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="哥特风格字体">哥特风格字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="复古字体">复古字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="像素风格体">像素风格体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="实用工具">实用工具</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="趣味变形体">趣味变形体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="未来感字体">未来感字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="夸张体">夸张体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="艺术字体">艺术字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="涂鸦字体">涂鸦字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="手绘字体">手绘字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="弯曲字体">弯曲字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="极简手写体">极简手写体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="现代衬线体">现代衬线体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="单线字体">单线字体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="细线体">细线体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="极简无衬线体">极简无衬线体</button>
+    <span class="filter__sep">·</span>
+    
+    <button class="filter__item" data-cat="时尚体">时尚体</button>
+    
+    
+  </div>
+
+  <!-- Cards -->
+  <div class="grid" id="grid">
+    
+    
+
+<a class="card" href="prompt/adrian-1-潮流品牌字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#1" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#1" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#1</div>
+        <div class="card__title">潮流品牌字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-2-高级杂志字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#2" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#2" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#2</div>
+        <div class="card__title">高级杂志字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-3-都市潮流字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#3" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#3" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#3</div>
+        <div class="card__title">都市潮流字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-4-先锋设计字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#4" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#4" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#4</div>
+        <div class="card__title">先锋设计字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-5-极简品牌字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#5" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#5" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#5</div>
+        <div class="card__title">极简品牌字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-6-现代知识字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#6" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#6" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#6</div>
+        <div class="card__title">现代知识字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-7-清爽标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#7" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#7" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#7</div>
+        <div class="card__title">清爽标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-8-科技简洁字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#8" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#8" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#8</div>
+        <div class="card__title">科技简洁字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-9-轻奢细线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#9" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#9" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#9</div>
+        <div class="card__title">轻奢细线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-10-温柔细线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#10" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#10" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#10</div>
+        <div class="card__title">温柔细线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-11-高级知识字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#11" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#11" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#11</div>
+        <div class="card__title">高级知识字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-12-未来细线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#12" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#12" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#12</div>
+        <div class="card__title">未来细线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-13-连续线稿体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#13" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#13" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#13</div>
+        <div class="card__title">连续线稿体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-14-草图单线体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#14" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#14" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#14</div>
+        <div class="card__title">草图单线体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-15-科技线框字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#15" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#15" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#15</div>
+        <div class="card__title">科技线框字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-16-优雅单线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_18.jpg" alt="#16" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_18.jpg" alt="#16" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#16</div>
+        <div class="card__title">优雅单线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-17-杂志衬线体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#17" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#17" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#17</div>
+        <div class="card__title">杂志衬线体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-18-商业衬线体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#18" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#18" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#18</div>
+        <div class="card__title">商业衬线体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-19-轻奢封面字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#19" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#19" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#19</div>
+        <div class="card__title">轻奢封面字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-20-深度专栏字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_21.jpg" alt="#20" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_21.jpg" alt="#20" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#20</div>
+        <div class="card__title">深度专栏字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-21-清新手迹字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#21" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#21" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#21</div>
+        <div class="card__title">清新手迹字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-22-成长笔记字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_23.jpg" alt="#22" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_23.jpg" alt="#22" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#22</div>
+        <div class="card__title">成长笔记字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-23-个人签名字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#23" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#23" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#23</div>
+        <div class="card__title">个人签名字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-24-情绪手写字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#24" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#24" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#24</div>
+        <div class="card__title">情绪手写字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-25-柔和曲线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#25" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#25" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#25</div>
+        <div class="card__title">柔和曲线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-26-女性美学字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#26" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#26" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#26</div>
+        <div class="card__title">女性美学字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-27-音乐律动字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#27" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#27" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#27</div>
+        <div class="card__title">音乐律动字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-28-艺术曲线字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#28" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#28" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#28</div>
+        <div class="card__title">艺术曲线字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-29-轮廓手绘体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#29" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#29" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#29</div>
+        <div class="card__title">轮廓手绘体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-30-插画装饰体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#30" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#30" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#30</div>
+        <div class="card__title">插画装饰体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-31-粗描海报体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_9.jpg" alt="#31" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_9.jpg" alt="#31" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#31</div>
+        <div class="card__title">粗描海报体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-32-童趣涂鸦体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#32" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#32" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#32</div>
+        <div class="card__title">童趣涂鸦体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-33-街头涂鸦字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#33" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#33" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#33</div>
+        <div class="card__title">街头涂鸦字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-34-青年观点字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#34" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#34" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#34</div>
+        <div class="card__title">青年观点字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-35-泡泡潮流涂鸦字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#35" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#35" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#35</div>
+        <div class="card__title">泡泡潮流涂鸦字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-36-爆裂摇滚涂鸦字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#36" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#36" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#36</div>
+        <div class="card__title">爆裂摇滚涂鸦字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-37-抽象艺术字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#37" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#37" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#37</div>
+        <div class="card__title">抽象艺术字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-38-展览字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#38" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#38" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#38</div>
+        <div class="card__title">展览字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-39-概念实验字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#39" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#39" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#39</div>
+        <div class="card__title">概念实验字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-40-创作者标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#40" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#40" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#40</div>
+        <div class="card__title">创作者标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-41-强冲击标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#41" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#41" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#41</div>
+        <div class="card__title">强冲击标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-42-爆款封面字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#42" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#42" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#42</div>
+        <div class="card__title">爆款封面字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-43-表情包标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#43" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#43" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#43</div>
+        <div class="card__title">表情包标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-44-强观点夸张字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#44" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#44" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#44</div>
+        <div class="card__title">强观点夸张字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-45-科技标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#45" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#45" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#45</div>
+        <div class="card__title">科技标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-46-液态未来字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#46" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#46" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#46</div>
+        <div class="card__title">液态未来字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-47-虚拟空间字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_18.jpg" alt="#47" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_18.jpg" alt="#47" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#47</div>
+        <div class="card__title">虚拟空间字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-48-赛博断裂字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#48" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#48" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#48</div>
+        <div class="card__title">赛博断裂字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-49-趣味标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#49" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#49" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#49</div>
+        <div class="card__title">趣味标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-50-搞笑封面字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#50" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#50" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#50</div>
+        <div class="card__title">搞笑封面字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-51-创意课程字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_21.jpg" alt="#51" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_21.jpg" alt="#51" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#51</div>
+        <div class="card__title">创意课程字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-52-儿童活动字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#52" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#52" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#52</div>
+        <div class="card__title">儿童活动字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-53-复古游戏字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_23.jpg" alt="#53" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_23.jpg" alt="#53" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#53</div>
+        <div class="card__title">复古游戏字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-54-街机游戏字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#54" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#54" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#54</div>
+        <div class="card__title">街机游戏字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-55-像素字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#55" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#55" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#55</div>
+        <div class="card__title">像素字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-56-方块模块字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#56" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#56" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#56</div>
+        <div class="card__title">方块模块字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-57-老电影字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#57" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#57" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#57</div>
+        <div class="card__title">老电影字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-58-霓虹旧街.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#58" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#58" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#58</div>
+        <div class="card__title">霓虹旧街</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-59-复古广告字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#59" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#59" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#59</div>
+        <div class="card__title">复古广告字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-60-复古故事字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#60" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#60" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#60</div>
+        <div class="card__title">复古故事字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-61-暗黑标题字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#61" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#61" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#61</div>
+        <div class="card__title">暗黑标题字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-62-中世纪字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_9.jpg" alt="#62" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_9.jpg" alt="#62" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#62</div>
+        <div class="card__title">中世纪字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-63-黑金属尖刺字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#63" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_101.jpg" alt="#63" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#63</div>
+        <div class="card__title">黑金属尖刺字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-64-华丽哥特饰字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#64" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#64" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#64</div>
+        <div class="card__title">华丽哥特饰字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-65-报头提题体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#65" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_103.jpg" alt="#65" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#65</div>
+        <div class="card__title">报头提题体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-66-狂草书法体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#66" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#66" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#66</div>
+        <div class="card__title">狂草书法体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-67-行书体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#67" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#67" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#67</div>
+        <div class="card__title">行书体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-68-禅意体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#68" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#68" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#68</div>
+        <div class="card__title">禅意体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-69-西部牛仔标题体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#69" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#69" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#69</div>
+        <div class="card__title">西部牛仔标题体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-70-通缉令字体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#70" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#70" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#70</div>
+        <div class="card__title">通缉令字体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-71-赏金字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#71" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#71" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#71</div>
+        <div class="card__title">赏金字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-72-机车西部字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#72" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#72" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#72</div>
+        <div class="card__title">机车西部字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-73-东方瘦金体体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#73" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#73" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#73</div>
+        <div class="card__title">东方瘦金体体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-74-国风牌匾体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#74" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#74" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#74</div>
+        <div class="card__title">国风牌匾体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-75-潮流篆意体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#75" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#75" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#75</div>
+        <div class="card__title">潮流篆意体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-76-东方海报.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#76" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_16.jpg" alt="#76" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#76</div>
+        <div class="card__title">东方海报</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-77-儿童绘本体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#77" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_17.jpg" alt="#77" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#77</div>
+        <div class="card__title">儿童绘本体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-78-乐高玩具体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_18.jpg" alt="#78" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_78.png" alt="#78" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#78</div>
+        <div class="card__title">乐高玩具体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-79-零食包装字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#79" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_19.jpg" alt="#79" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#79</div>
+        <div class="card__title">零食包装字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-80-剪纸拼贴字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#80" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_2.jpg" alt="#80" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#80</div>
+        <div class="card__title">剪纸拼贴字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-81-灯管字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#81" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_20.jpg" alt="#81" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#81</div>
+        <div class="card__title">灯管字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-82-夜市菜单字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_21.jpg" alt="#82" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_82.png" alt="#82" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#82</div>
+        <div class="card__title">夜市菜单字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-83-便利贴字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#83" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_22.jpg" alt="#83" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#83</div>
+        <div class="card__title">便利贴字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-84-电商促销字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_23.jpg" alt="#84" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_84.png" alt="#84" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#84</div>
+        <div class="card__title">电商促销字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-85-钢笔楷书字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#85" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_24.jpg" alt="#85" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#85</div>
+        <div class="card__title">钢笔楷书字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-86-学生衡水体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#86" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_25.jpg" alt="#86" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#86</div>
+        <div class="card__title">学生衡水体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-87-批注手写体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#87" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_3.jpg" alt="#87" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#87</div>
+        <div class="card__title">批注手写体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-88-商务签批体.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#88" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_4.jpg" alt="#88" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#88</div>
+        <div class="card__title">商务签批体</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-89-重工机械字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#89" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_5.jpg" alt="#89" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#89</div>
+        <div class="card__title">重工机械字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-90-机甲装甲字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#90" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_6.jpg" alt="#90" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#90</div>
+        <div class="card__title">机甲装甲字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-91-工业铭牌字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#91" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_7.jpg" alt="#91" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#91</div>
+        <div class="card__title">工业铭牌字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-92-机械切割字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#92" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_8.jpg" alt="#92" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#92</div>
+        <div class="card__title">机械切割字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-93-球衣号码字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">g</span><img class="card__img" src="assets/tests/adrian_gcli_93.jpg" alt="#93" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_93.png" alt="#93" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#93</div>
+        <div class="card__title">球衣号码字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-94-赛车速度字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">g</span><img class="card__img" src="assets/tests/adrian_gcli_94.jpg" alt="#94" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_94.png" alt="#94" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#94</div>
+        <div class="card__title">赛车速度字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-95-格斗力量字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_102.jpg" alt="#95" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_95.png" alt="#95" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#95</div>
+        <div class="card__title">格斗力量字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-96-电竞战队字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">g</span><img class="card__img" src="assets/tests/adrian_gcli_96.jpg" alt="#96" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_96.png" alt="#96" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#96</div>
+        <div class="card__title">电竞战队字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-97-建筑立面字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#97" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_104.jpg" alt="#97" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#97</div>
+        <div class="card__title">建筑立面字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-98-水泥构筑字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#98" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_105.jpg" alt="#98" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#98</div>
+        <div class="card__title">水泥构筑字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-99-空间导视字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#99" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/article_106.jpg" alt="#99" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#99</div>
+        <div class="card__title">空间导视字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-100-纪念碑刻字.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#100" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_1.jpg" alt="#100" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#100</div>
+        <div class="card__title">纪念碑刻字</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-101-麦肯锡风格咨询视觉.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#101" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_10.jpg" alt="#101" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#101</div>
+        <div class="card__title">麦肯锡风格咨询视觉</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-102-凌乱打圈蜡笔画.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#102" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_11.jpg" alt="#102" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#102</div>
+        <div class="card__title">凌乱打圈蜡笔画</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-103-永远做个小孩 · LEGO 风格.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#103" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_12.jpg" alt="#103" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#103</div>
+        <div class="card__title">永远做个小孩 · LEGO 风格</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-104-我的世界方块风.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#104" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_13.jpg" alt="#104" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#104</div>
+        <div class="card__title">我的世界方块风</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-105-AI宠物图：拍立得 + 纹身设计稿.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_14.jpg" alt="#105" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--g">b</span><img class="card__img" src="assets/tests/adrian_bizyair_105.png" alt="#105" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#105</div>
+        <div class="card__title">AI宠物图：拍立得 + 纹身设计稿</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+<a class="card" href="prompt/adrian-106-万物皆可像素头像.html" data-category="美学实验" data-collection="adrian-punk" onclick="saveTab(this)">
+      <div class="card__imgs">
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">g</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#106" loading="lazy"></div>
+        <div class="card__img-wrap"><span class="card__badge card__badge--f">b</span><img class="card__img" src="assets/tests/adrian_refs/cat_15.jpg" alt="#106" loading="lazy"></div>
+      </div>
+      <div class="card__body">
+        <div class="card__num">#106</div>
+        <div class="card__title">万物皆可像素头像</div>
+        <hr class="card__line">
+        <div class="card__meta">美学实验 · 2026-</div>
+      </div>
+    </a>
+
+
+    
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://x.com/xiaoxiaodong01" target="_blank">xiaoxiaodong01</a> · <a href="https://x.com/AdrianPunk115" target="_blank">AdrianPunk115</a> · dong · 2026
+    · <a href="/wisdom/">📜 每日箴言</a>
+  </div>
+</div>
+
+
+
+<style>
+/* === V3 清透呼吸美学 === */
+:root {
+  --bg: #f7f5f2;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f2ef;
+  --border: #e8e4df;
+  --text: #5a5550;
+  --text-muted: #a09890;
+  --text-meta: #b8b0a8;
+  --broth: #f5f0eb;
+  --broth-border: #c4a87a;
+  --spice: #eff1f0;
+  --spice-border: #8ba8a4;
+  --catalyst: #f2eeeb;
+  --catalyst-border: #c0988a;
+  --avoid-text: #b07070;
+  --accent: #c4a87a;
+  --accent-colophon: #c4bba8;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper fiber noise texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Layout --- */
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 24px 0 12px;
+}
+.header__title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.header__stats {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.header__line {
+  border: none;
+  border-top: 1px solid var(--accent);
+  opacity: 0.5;
+}
+
+/* --- Hero --- */
+.hero {
+  padding: 48px 0 32px;
+  text-align: center;
+}
+.hero__quote {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 16px;
+  line-height: 2;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.hero__author {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.hero__today {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.hero__today-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.hero__today-title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 4px;
+}
+.hero__today-sub {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* --- Filter --- */
+.filter {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 24px 0;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+.filter__item {
+  cursor: pointer;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  position: relative;
+  transition: color 0.2s;
+}
+.filter__item:hover,
+.filter__item--active {
+  color: var(--text);
+}
+.filter__item--active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--accent);
+}
+.filter__sep {
+  color: var(--accent);
+  opacity: 0.5;
+  user-select: none;
+}
+
+/* --- Date divider --- */
+.date-divider {
+  text-align: center;
+  padding: 32px 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+  letter-spacing: 0.1em;
+}
+
+/* --- Card grid --- */
+.grid {
+  columns: 3;
+  column-gap: 24px;
+}
+@media (max-width: 1024px) { .grid { columns: 2; } }
+@media (max-width: 640px) { .grid { columns: 1; } }
+
+.card {
+  break-inside: avoid;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.card:hover {
+  background: var(--bg-hover);
+}
+.card__img {
+  width: 100%;
+  display: block;
+}
+.card__body {
+  padding: 16px;
+}
+.card__num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+}
+.card__title {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 15px;
+  color: var(--text);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.card__line {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
+}
+.card__meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.card__noimg {
+  aspect-ratio: 3/2;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 13px;
+  color: var(--text-meta);
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 48px 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-colophon);
+  letter-spacing: 0.08em;
+}
+.footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card__imgs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+.card__img-wrap{position:relative;overflow:hidden;background:var(--bg);}
+.card__badge{position:absolute;top:6px;left:6px;font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:2px;z-index:1;opacity:0.85;}
+.card__badge--g{background:#d4edda;color:#155724;}
+.card__badge--b{background:#d1ecf1;color:#0c5460;}
+.card__badge--f{background:#f8d7da;color:#721c24;}
+</style>
+
+<script>
+// Collection tab switching
+let activeColl = localStorage.getItem('pg_tab') || 'xiaoxiaodong';
+
+function saveTab(el) {
+  localStorage.setItem('pg_tab', activeColl);
+}
+
+// Activate saved tab on load
+(() => {
+  const savedBtn = document.querySelector(`[data-coll="${activeColl}"]`);
+  if (savedBtn && !savedBtn.classList.contains('filter__item--active')) {
+    document.querySelectorAll('[data-coll]').forEach(b => b.classList.remove('filter__item--active'));
+    savedBtn.classList.add('filter__item--active');
+  }
+})();
+
+document.querySelectorAll('[data-coll]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-coll]').forEach(b => b.classList.remove('filter__item--active'));
+    btn.classList.add('filter__item--active');
+    activeColl = btn.dataset.coll;
+    
+    // Show/hide heroes
+    document.querySelectorAll('.hero').forEach(h => {
+      h.style.display = (h.dataset.collection === activeColl) ? '' : 'none';
+    });
+    
+    // Filter cards
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = (card.dataset.collection === activeColl) ? '' : 'none';
+    });
+    
+    // Reset category filter to "全部"
+    document.querySelectorAll('.filter__item[data-cat]').forEach(b => b.classList.remove('filter__item--active'));
+    document.querySelector('.filter__item[data-cat="全部"]').classList.add('filter__item--active');
+    
+    // Update visible category filters
+    const visibleCats = new Set();
+    document.querySelectorAll(`.card[data-collection="${activeColl}"]`).forEach(c => visibleCats.add(c.dataset.category));
+    document.querySelectorAll('.filter__item[data-cat]').forEach(b => {
+      b.style.display = (b.dataset.cat === '全部' || visibleCats.has(b.dataset.cat)) ? '' : 'none';
+    });
+  });
+});
+
+// Category filter (scoped to active collection)
+document.querySelectorAll('.filter__item[data-cat]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter__item[data-cat]').forEach(b => b.classList.remove('filter__item--active'));
+    btn.classList.add('filter__item--active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.card').forEach(card => {
+      if (card.dataset.collection !== activeColl) return;
+      card.style.display = (cat === '全部' || card.dataset.category === cat) ? '' : 'none';
+    });
+  });
+});
+
+// Initialize: show only first collection's cards & categories
+(() => {
+  // Hide cards from other collections
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.display = (card.dataset.collection === activeColl) ? '' : 'none';
+  });
+  // Show only active collection's categories
+  const visibleCats = new Set();
+  document.querySelectorAll(`.card[data-collection="${activeColl}"]`).forEach(c => visibleCats.add(c.dataset.category));
+  document.querySelectorAll('.filter__item[data-cat]').forEach(b => {
+    b.style.display = (b.dataset.cat === '全部' || visibleCats.has(b.dataset.cat)) ? '' : 'none';
+  });
+})();
+</script>
+
+</body>
+</html>
