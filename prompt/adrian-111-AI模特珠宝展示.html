@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#111 AI模特珠宝展示 · 提示词画廊</title>
+<style>
+:root{--bg:#f7f5f2;--bg-card:#fff;--border:#e8e4df;--text:#5a5550;--text-muted:#a09890;--text-meta:#b8b0a8;--accent:#c4a87a;--serif:"Noto Serif SC","Songti SC",serif;--sans:"Noto Sans SC","PingFang SC",sans-serif;--mono:"JetBrains Mono","SF Mono",monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased}
+.page{max-width:800px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+.nav{display:flex;justify-content:space-between;padding:20px 0 0;font-size:12px}
+.nav__back{color:var(--text-muted);text-decoration:none}.nav__back:hover{color:var(--text)}
+.nav__random{font-size:16px;text-decoration:none}
+.nav__line{border:none;border-top:1px solid var(--border);margin:8px 0 0}
+.title-block{padding-top:24px}
+.title-block__num{font-family:var(--mono);font-size:10px;color:var(--text-meta);letter-spacing:.1em}
+.title-block__title{font-family:var(--serif);font-weight:300;font-size:28px;margin-top:4px}
+.meta-card{padding-top:24px}
+.meta-card__grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12px}
+.meta-card__key{font-family:var(--mono);font-size:9px;color:var(--text-meta);letter-spacing:.05em}
+.meta-card__val{font-weight:300}.meta-card__val a{color:var(--text);text-decoration:underline}
+.meta-card__heat{color:var(--accent);letter-spacing:2px}
+.meta-card__tag{display:inline-block;padding:1px 8px;font-family:var(--mono);font-size:9px;color:var(--text-muted);border:1px solid var(--border);border-radius:2px;margin-right:4px}
+.comparison{padding-top:48px}
+.comparison__title{font-family:var(--mono);font-size:10px;color:var(--text-meta);margin-bottom:12px;letter-spacing:.1em}
+.comparison__grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.comparison__item{border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.comparison__item-label{font-family:var(--mono);font-size:9px;color:var(--text-meta);padding:6px 10px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;justify-content:space-between}
+.comparison__item img{width:100%;display:block;cursor:zoom-in}
+.comparison__item--empty{display:flex;align-items:center;justify-content:center;min-height:180px;background:var(--bg);font-family:var(--mono);font-size:9px;color:var(--text-meta);opacity:.5}
+.lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:lb-fade .2s ease}
+@keyframes lb-fade{from{opacity:0}to{opacity:1}}
+.lightbox img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:2px}
+.lightbox__close{position:absolute;top:16px;right:20px;color:#fff;font-size:28px;opacity:.6;cursor:pointer;font-weight:100}
+.classic{padding-top:48px}
+.classic__label{font-family:var(--mono);font-size:10px;color:var(--accent);opacity:.7;margin-bottom:12px}
+.classic__text{font-family:var(--serif);font-weight:300;font-size:13px;line-height:2;white-space:pre-wrap;word-break:break-word;padding:20px 24px;background:var(--bg-card);border:1px solid var(--border);border-radius:2px}
+.copy-btn{font-weight:300;font-size:10px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:4px 8px}
+.copy-btn:hover{color:var(--text)}.copy-btn--done{color:var(--accent)}
+.copy-bar{padding-top:32px;display:flex;gap:16px;justify-content:center;font-size:10px}
+.nav-arrows{display:flex;justify-content:space-between;padding-top:32px}
+.nav-arrows a{font-family:var(--serif);font-weight:200;font-size:12px;color:var(--text-muted);text-decoration:none}
+.footer{text-align:center;padding:48px 0 24px;font-family:var(--mono);font-size:9px;color:#c4bba8}
+.footer a{color:inherit;text-decoration:none}
+.gesture-hint{text-align:center;padding:12px 0 0;font-family:var(--mono);font-size:9px;color:var(--text-meta);opacity:.5}
+</style>
+</head>
+<body>
+<div class="page">
+  <nav class="nav">
+    <a class="nav__back" href="../index.html">← gallery</a>
+    <a class="nav__random" href="javascript:void(0)" onclick="randomPrompt()" title="随机">🎲</a>
+  </nav>
+  <hr class="nav__line">
+  <div class="title-block">
+    <div class="title-block__num">#111</div>
+    <div class="title-block__title">AI模特珠宝展示</div>
+  </div>
+  <div class="meta-card">
+    <div class="meta-card__grid">
+      <span class="meta-card__key">编号</span><span class="meta-card__val">#111</span>
+      <span class="meta-card__key">类型</span><span class="meta-card__val"><span class="meta-card__tag">珠宝商业视觉</span><span class="meta-card__tag">经典版</span></span>
+      <span class="meta-card__key">垫图</span><span class="meta-card__val">需要</span>
+      <span class="meta-card__key">热度</span><span class="meta-card__val"><span class="meta-card__heat">🔥🔥🔥</span></span>
+      <span class="meta-card__key">分类</span><span class="meta-card__val">珠宝商业视觉</span>
+      <span class="meta-card__key">原帖</span><span class="meta-card__val"><a href="https://x.com/AdrianPunk115/status/2064257118220517696" target="_blank">查看原帖 →</a></span>
+      <span class="meta-card__key">日期</span><span class="meta-card__val">2026-06-08</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison__title">🧪 模型对比测试</div>
+    <div class="comparison__grid">
+      <div class="comparison__item comparison__item--empty"><span>Nano Banana 2 ——empty</span></div>
+      <div class="comparison__item comparison__item--empty"><span>GPT Image 2 ——empty</span></div>
+    </div>
+  </div>
+  <div class="classic">
+    <div class="classic__label">经典版（非汤底结构）</div>
+    <div class="classic__text" id="full-text">请严格参考我上传的珠宝照片，保留珠宝本身的核心设计、材质、镶嵌结构、轮廓比例、金属质感和高级感，不要改变珠宝款式，不要添加不存在的品牌 Logo、文字或水印。
+
+珠宝类型：{{项链 / 手链 / 戒指 / 耳环}}
+
+生成一张高级珠宝时尚广告宣传照。画面中出现一位原创东方女性模特，不要模仿任何真实明星、名人或公众人物。模特五官立体，浓眉大眼，面部轮廓柔和但有力量感，气质清冷、优雅、贵气、克制。妆容精致，哑光底妆，干净高级眼妆，烈焰红唇，整体呈现高端时尚杂志封面与奢侈品珠宝广告大片的氛围。
+
+模特穿着根据珠宝颜色自动搭配：
+银色、白钻、铂金、珍珠、冷白色珠宝，搭配黑色丝绒晚礼服、象牙白极简晚礼服或冷灰色高级礼服；
+黄金、玫瑰金、暖色宝石珠宝，搭配黑色、香槟色、深棕色或奶油白晚礼服。
+礼服必须简洁高级，不能有复杂图案，不能抢镜，不能遮挡珠宝。
+
+背景使用高级纯色摄影棚背景，根据珠宝颜色选择雾面暖灰、象牙白、奶油白、浅米色、深黑、深棕、香槟金、冷灰蓝等颜色。背景干净，有轻微柔和渐变和棚拍光影层次，不要任何杂乱道具。
+
+整体重点是人与珠宝的关系。珠宝必须清晰可见，佩戴位置真实自然。
+项链：突出颈部、锁骨线条、吊坠垂落感和项链在皮肤上的真实比例。
+手链：突出手腕线条、手部姿态、金属反光和镶钻细节。
+戒指：突出手指线条、戒面结构、钻石高光和真实佩戴感。
+耳环：突出侧脸、耳部、颈部线条和耳坠垂感。
+
+构图简单高级，人物半身近景或局部特写，画面有留白，有故事感，珠宝位于视觉焦点。专业摄影棚灯光，柔和主光，轻微轮廓光，细腻皮肤质感，钻石闪耀但不过曝，金属反光真实，高级商业广告质感，高清真实人像摄影，浅景深，精致修图，minimal luxury jewelry campaign, high fashion editorial portrait, cinematic studio lighting, ultra high definition, refined luxury advertising photography.
+
+负面要求：不要生成任何真实明星、名人或公众人物的相似脸，不要模仿具体品牌广告，不要品牌 Logo，不要文字，不要水印，不要改变珠宝结构，不要珠宝变形，不要多余首饰，不要错误佩戴，不要廉价影楼风，不要网红自拍感，不要卡通感，不要 AI 塑料皮肤，不要过度磨皮，不要过曝，不要杂乱背景，不要服装抢镜，不要脸部畸形，不要手指错误，不要低清晰度。</div>
+    <div style="text-align:right;margin-top:12px"><button class="copy-btn" onclick="copyText('full-text')">copy →</button></div>
+  </div>
+  <div class="copy-bar"><button class="copy-btn" onclick="copyFullPrompt()">复制全部提示词</button></div>
+  <div class="nav-arrows">
+    <a href="adrian-110-黑金黄金珠宝广告.html">← #110</a>
+    <span></span>
+  </div>
+  <div class="footer"><a href="https://x.com/AdrianPunk115" target="_blank">@AdrianPunk115</a> · 06-08</div>
+  <div class="gesture-hint">← swipe next · swipe back →</div>
+</div>
+<script>
+function copyText(id){const el=document.getElementById(id);navigator.clipboard.writeText(el.textContent.trim());const btn=el.closest('.classic').querySelector('.copy-btn');btn.textContent='✓ copied';btn.classList.add('copy-btn--done');setTimeout(()=>{btn.textContent='copy →';btn.classList.remove('copy-btn--done')},1500)}
+function copyFullPrompt(){const text=document.querySelector('.classic__text');if(text)navigator.clipboard.writeText(text.textContent.trim());const btn=document.querySelector('.copy-bar .copy-btn');btn.textContent='✓ copied';btn.classList.add('copy-btn--done');setTimeout(()=>{btn.textContent='复制全部提示词';btn.classList.remove('copy-btn--done')},1500)}
+function randomPrompt(){window.location.href='adrian-'+Math.floor(Math.random()*111+1)+'-'+['潮流品牌字','时装设计师手稿','银色珠宝柔光佩戴'][Math.floor(Math.random()*3)]+'.html'}
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tx;if(Math.abs(dx)>80){if(dx>0)window.location.href='../index.html'}});
+function openLightbox(s,a){const lb=document.createElement('div');lb.className='lightbox';lb.innerHTML='<span class="lightbox__close">&times;</span><img src="'+s+'" alt="'+(a||'')+'">';lb.addEventListener('click',e=>{if(e.target===lb||e.target.classList.contains('lightbox__close'))lb.remove()});document.body.appendChild(lb)}
+document.querySelectorAll('.comparison__item img').forEach(img=>{img.addEventListener('click',()=>openLightbox(img.src,img.alt))});
+</script>
+</body>
+</html>
