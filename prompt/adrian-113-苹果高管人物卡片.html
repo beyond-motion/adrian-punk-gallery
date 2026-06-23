@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#113 苹果高管人物卡片 · 提示词画廊</title>
+<style>
+:root {
+  --bg: #f7f5f2;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f2ef;
+  --border: #e8e4df;
+  --text: #5a5550;
+  --text-muted: #a09890;
+  --text-meta: #b8b0a8;
+  --broth: #f5f0eb;
+  --broth-border: #c4a87a;
+  --spice: #eff1f0;
+  --spice-border: #8ba8a4;
+  --catalyst: #f2eeeb;
+  --catalyst-border: #c0988a;
+  --avoid-text: #b07070;
+  --accent: #c4a87a;
+  --accent-colophon: #c4bba8;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0 8px;
+}
+.nav__back {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav__random {
+  font-family: var(--sans);
+  font-size: 14px;
+  text-decoration: none;
+  opacity: 0.5;
+}
+.nav__back:hover, .nav__random:hover { opacity: 1; color: var(--text); }
+.nav__line { border: none; border-top: 1px solid var(--border); margin: 0; }
+.title-block {
+  padding: 48px 0 8px;
+}
+.title-block__num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  margin-bottom: 4px;
+}
+.title-block__title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 26px;
+  line-height: 1.3;
+  color: var(--text);
+}
+.meta-card {
+  padding: 16px 0;
+}
+.meta-card__grid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 4px 0;
+  font-size: 11px;
+}
+.meta-card__key {
+  font-family: var(--mono);
+  color: var(--text-meta);
+}
+.meta-card__val {
+  font-family: var(--sans);
+  color: var(--text);
+}
+.meta-card__val a { color: var(--accent); text-decoration: underline; }
+.meta-card__heat { color: var(--accent); letter-spacing: 2px; }
+.meta-card__tag {
+  display: inline-block;
+  padding: 1px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-right: 4px;
+}
+.comparison {
+  padding-top: 48px;
+}
+.comparison__title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.comparison__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.comparison__item {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.comparison__item-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  justify-content: space-between;
+}
+.comparison__item img {
+  width: 100%;
+  display: block;
+  cursor: zoom-in;
+}
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: lb-fade 0.2s ease;
+}
+@keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 2px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  opacity: 0.6;
+  cursor: pointer;
+  font-weight: 100;
+}
+.lightbox__close:hover { opacity: 1; }
+.comparison__item--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  opacity: 0.5;
+}
+.classic {
+  padding-top: 48px;
+}
+.classic__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+.classic__text {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.section__copy {
+  text-align: right;
+  margin-top: 12px;
+}
+.copy-btn {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.copy-btn:hover { color: var(--text); }
+.copy-btn--done { color: var(--accent); }
+.copy-bar {
+  padding-top: 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 10px;
+}
+.footer {
+  text-align: center;
+  padding: 48px 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-colophon);
+}
+.footer a { color: inherit; text-decoration: none; }
+.gesture-hint {
+  text-align: center;
+  padding: 12px 0 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  opacity: 0.5;
+}
+.nav-arrows {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 32px;
+}
+.nav-arrows a {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav-arrows a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav class="nav">
+    <a class="nav__back" href="../index.html" id="backLink">← gallery</a>
+    <a class="nav__random" href="javascript:void(0)" onclick="randomPrompt()" title="随机">🎲</a>
+  </nav>
+  <hr class="nav__line">
+
+  <div class="title-block">
+    <div class="title-block__num">#113</div>
+    <div class="title-block__title">苹果高管人物卡片</div>
+  </div>
+
+  <div class="meta-card">
+    <div class="meta-card__grid">
+      <span class="meta-card__key">编号</span>
+      <span class="meta-card__val">#113</span>
+      <span class="meta-card__key">类型</span>
+      <span class="meta-card__val">
+        <span class="meta-card__tag">商业视觉</span>
+        <span class="meta-card__tag">经典版</span>
+      </span>
+      <span class="meta-card__key">垫图</span>
+      <span class="meta-card__val">需要</span>
+      <span class="meta-card__key">热度</span>
+      <span class="meta-card__val"><span class="meta-card__heat">0</span></span>
+      <span class="meta-card__key">分类</span>
+      <span class="meta-card__val">商业视觉</span>
+      <span class="meta-card__key">结构</span>
+      <span class="meta-card__val"></span>
+      <span class="meta-card__key">核心创新</span>
+      <span class="meta-card__val"></span>
+      <span class="meta-card__key">原帖</span>
+      <span class="meta-card__val"><a href="https://x.com/AdrianPunk115/status/2069224173143257280" target="_blank">查看原帖 →</a></span>
+      <span class="meta-card__key">日期</span>
+      <span class="meta-card__val">2026-06-23</span>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison__title">🧪 模型对比测试</div>
+    <div class="comparison__grid">
+      <div class="comparison__item">
+        <div class="comparison__item-label">
+          <span>Nano Banana 2</span>
+          <span>——empty</span>
+        </div>
+        <img src="../assets/tests/adrian_gcli_113.jpg" alt="Nano Banana 2 测试" loading="lazy">
+      </div>
+      <div class="comparison__item">
+        <div class="comparison__item-label">
+          <span>GPT Image 2</span>
+          <span>——empty</span>
+        </div>
+        <img src="../assets/tests/adrian_bizyair_113.png" alt="GPT Image 2 测试" loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison__title">🎨 商业视觉 参考样图</div>
+    <div class="comparison__grid" style="grid-template-columns: 1fr;">
+      <div class="comparison__item">
+        <div class="comparison__item-label">
+          <span>来源：@AdrianPunk115</span>
+          <span>原推参考</span>
+        </div>
+        <img src="../assets/tests/adrian_refs/article_113.jpg" alt="苹果高管人物卡片参考图" loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <div class="classic">
+    <div class="classic__label">经典版（非汤底结构）</div>
+    <div class="classic__text" id="full-text">请根据我上传的人物照片，生成一张"苹果官网管理层人物卡片"风格的高端企业形象图。
+
+【输入信息】
+
+姓名：{{填写姓名}}
+职位：{{填写职位}}
+公司：{{填写公司}}
+
+【画面尺寸】
+
+正方形 1:1 构图，建议输出 2048×2048 像素。
+画面必须是一张完整人物卡片，不裁掉姓名、职位或公司名称。
+
+【人物还原】
+
+准确保留上传人物的身份特征，包括：
+
+脸型、五官比例、眼神、年龄感、肤色、发型和个人气质。
+
+可以适度优化皮肤状态、发型、妆容和精神面貌，但不能改变真实长相，不能生成网红脸，不能过度磨皮。
+
+【人物摄影】
+
+人物为胸部以上的高管半身肖像。
+
+身体可以自然向左或向右转动约10—20度，脸部转向镜头，眼睛直视镜头。
+
+肩膀自然放松，姿态挺拔但不僵硬，表情沉稳、自信、亲切，带轻微自然微笑。
+
+人物不要双手抱胸，不做夸张动作。
+
+使用专业企业高管影棚布光：
+
+大型柔光箱从正面偏上方照亮人物；
+面部光线均匀柔和；
+眼睛中保留自然眼神光；
+鼻影、面颊和下颌线有轻微立体感；
+头发和肩膀边缘有微弱轮廓光；
+不使用强烈明暗对比，不使用电影式暗光。
+
+背景为干净的浅灰色至白色渐变影棚背景，人物身后略亮，四周带极轻微灰色过渡。
+
+【服装造型】
+
+根据人物的性别、年龄和职业气质，自动搭配简洁、现代、低调的高管服装。
+
+男性可使用深蓝、黑色或炭灰色西装、衬衫或简洁商务上衣。
+
+女性可使用深蓝、黑色、灰蓝或白色的简洁西装、连衣裙或商务上衣。
+
+服装剪裁现代，面料高级，不出现明显品牌标志、复杂花纹或夸张饰品。
+
+整体感觉接近全球科技公司管理层官网肖像，不要传统银行证件照感。
+
+【版式结构】
+
+画面上方约占75%—78%，用于展示人物肖像。
+
+画面下方约占22%—25%，保留纯白色信息区域。
+
+人物照片和下方信息区域之间自然连接，不加边框，不加阴影，不加装饰线。
+
+文字全部左对齐，左侧距离画面边缘约7%。
+
+姓名使用清晰、现代的无衬线字体，颜色为科技蓝，字号最大。
+
+姓名下方依次显示：
+
+第一行：职位
+第二行：公司名称
+
+职位和公司名称使用黑色或深灰色无衬线字体，字号明显小于姓名，行距紧凑但清楚。
+
+必须严格按照以下内容显示，不能自行翻译、改写、增减或重复：
+
+{{姓名}}
+{{职位}}
+{{公司}}
+
+【整体效果】
+
+极简、现代、专业、可信、克制、亲和。
+
+像全球科技公司官方网站上的正式管理层介绍卡片。
+
+人物是第一视觉中心，文字是第二视觉中心。
+
+保持充足留白，不增加图标、数据、按钮、装饰图形或多余信息。
+
+【禁止出现】
+
+苹果标志、其他品牌标志、网址、社交账号、@符号、水印、小红书标记、边框、复杂背景、办公室场景、夸张微笑、浓妆、塑料皮肤、网红脸、过度锐化、强烈侧光、杂志大片效果、传统证件照蓝底、多人排版、错误文字、乱码或重复文字。</div>
+    <div class="section__copy"><button class="copy-btn" onclick="copyText('full-text')">copy →</button></div>
+  </div>
+
+  <div class="copy-bar">
+    <button class="copy-btn" onclick="copyFullPrompt()">复制全部提示词</button>
+  </div>
+
+  <div class="nav-arrows">
+    <a href="adrian-112-翡翠玉石类品宣图.html">← #112</a>
+  </div>
+
+  <div class="footer">
+    <a href="https://x.com/AdrianPunk115" target="_blank">@AdrianPunk115</a>
+     · 06-23
+  </div>
+  <div class="gesture-hint">← swipe next · swipe back →</div>
+</div>
+
+<script>
+const PROMPT_DATA = ["adrian-113-苹果高管人物卡片", "adrian-112-翡翠玉石类品宣图", "adrian-111-AI模特珠宝展示", "adrian-110-黑金黄金珠宝广告", "adrian-109-珠宝智能穿戴写真", "adrian-108-银色珠宝柔光佩戴", "adrian-107-时装设计师手稿", "adrian-106-万物皆可像素头像", "adrian-105-AI宠物图拍立得纹身设计稿", "adrian-104-我的世界方块风", "adrian-103-永远做个小孩", "adrian-102-凌乱打圈蜡笔画", "adrian-101-麦肯锡风格咨询视觉", "adrian-100-纪念碑刻字", "adrian-99-空间导视字", "adrian-98-水泥构筑字", "adrian-97-建筑立面字", "adrian-96-电竞战队字", "adrian-95-格斗力量字", "adrian-94-赛车速度字", "adrian-93-球衣号码字", "adrian-92-机械切割字", "adrian-91-工业铭牌字", "adrian-90-机甲装甲字", "adrian-89-重工机械字", "adrian-88-商务签批体", "adrian-87-批注手写体", "adrian-86-学生衡水体", "adrian-85-钢笔楷书字", "adrian-84-电商促销字", "adrian-83-便利贴字", "adrian-82-夜市菜单字", "adrian-81-灯管字", "adrian-80-剪纸拼贴字", "adrian-79-零食包装字", "adrian-78-乐高玩具体", "adrian-77-儿童绘本体", "adrian-76-东方海报", "adrian-75-潮流密意体", "adrian-74-国风牌匾体", "adrian-73-东方瘦金体体", "adrian-72-机车西部字", "adrian-71-赏金字", "adrian-70-通缉令字体", "adrian-69-西部牛仔标题体", "adrian-68-禅意体", "adrian-67-行书体", "adrian-66-狂草书法体", "adrian-65-报头提题体", "adrian-64-华丽哥特饰字", "adrian-63-黑金属尖刺字", "adrian-62-中世纪字", "adrian-61-暗黑标题字", "adrian-60-复古故事字", "adrian-59-复古广告字", "adrian-58-霓虹旧街", "adrian-57-老电影字", "adrian-56-方块模块字", "adrian-55-像素字", "adrian-54-街机游戏字", "adrian-53-复古游戏字", "adrian-52-儿童活动字", "adrian-51-创意课程字", "adrian-50-搞笑封面字", "adrian-49-趣味标题字", "adrian-48-赛博断裂字", "adrian-47-虚拟空间字", "adrian-46-液态未来字", "adrian-45-科技标题字", "adrian-44-强观点夸张字", "adrian-43-表情包标题字", "adrian-42-爆款封面字", "adrian-41-强冲击标题字", "adrian-40-创作者标题字", "adrian-39-概念实验字", "adrian-38-展览字", "adrian-37-抽象艺术字", "adrian-36-爆裂摇滚涂鸦字", "adrian-35-泡泡潮流涂鸦字", "adrian-34-青年观点字", "adrian-33-街头涂鸦字", "adrian-32-童趣涂鸦体", "adrian-31-粗描海报体", "adrian-30-插画装饰体", "adrian-29-轮廓手绘体", "adrian-28-艺术曲线字", "adrian-27-音乐律动字", "adrian-26-女性美学字", "adrian-25-柔和曲线字", "adrian-24-情绪手写字", "adrian-23-个人签名字", "adrian-22-成长笔记字", "adrian-21-清新手迹字", "adrian-20-深度专栏字", "adrian-19-轻奢封面字", "adrian-18-商业衬线体", "adrian-17-杂志衬线体", "adrian-16-优雅单线字", "adrian-15-科技线框字", "adrian-14-草图单线体", "adrian-13-连续线稿体", "adrian-12-未来细线字", "adrian-11-高级知识字", "adrian-10-温柔细线字", "adrian-9-轻奢细线字", "adrian-8-科技简洁字", "adrian-7-清爽标题字", "adrian-6-现代知识字", "adrian-5-极简品牌字", "adrian-4-先锋设计字", "adrian-3-都市潮流字", "adrian-2-高级杂志字", "adrian-1-潮流品牌字"];
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent.trim());
+  const btn = el.closest('.classic').querySelector('.copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = 'copy →'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+function copyFullPrompt() {
+  const text = document.querySelector('.classic__text');
+  if (text) navigator.clipboard.writeText(text.textContent.trim());
+  const btn = document.querySelector('.copy-bar .copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = '复制全部提示词'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+function randomPrompt() {
+  const slugs = PROMPT_DATA;
+  const current = window.location.pathname.split('/').pop().replace('.html', '');
+  const candidates = slugs.filter(s => s !== current);
+  if (candidates.length) window.location.href = candidates[Math.floor(Math.random() * candidates.length)] + '.html';
+}
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 80) {
+    if (dx < 0) {
+      const nextLink = document.querySelector('.nav-arrows a:last-child');
+      if (nextLink) nextLink.click();
+    } else {
+      window.location.href = '../index.html';
+    }
+  }
+});
+function openLightbox(src, alt) {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<span class="lightbox__close">&times;</span><img src="${src}" alt="${alt || ''}">`;
+  lb.addEventListener('click', e => { if (e.target === lb || e.target.classList.contains('lightbox__close')) lb.remove(); });
+  document.body.appendChild(lb);
+}
+document.querySelectorAll('.comparison__item img').forEach(img => {
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
+});
+</script>
+</body>
+</html>
