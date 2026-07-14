@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#121 复古扁平立体角色设定图 · 提示词画廊</title>
+<style>
+:root {
+  --bg: #f7f5f2;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f2ef;
+  --border: #e8e4df;
+  --text: #5a5550;
+  --text-muted: #a09890;
+  --text-meta: #b8b0a8;
+  --broth: #f5f0eb;
+  --broth-border: #c4a87a;
+  --spice: #eff1f0;
+  --spice-border: #8ba8a4;
+  --catalyst: #f2eeeb;
+  --catalyst-border: #c0988a;
+  --avoid-text: #b07070;
+  --accent: #c4a87a;
+  --accent-colophon: #c4bba8;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Nav --- */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0 12px;
+}
+.nav__back {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav__back:hover { color: var(--text); }
+.nav__random {
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.4;
+  text-decoration: none;
+}
+.nav__line {
+  border: none;
+  border-top: 1px solid var(--accent);
+  opacity: 0.5;
+}
+
+/* --- Title block --- */
+.title-block {
+  padding-top: 48px;
+}
+.title-block__num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  letter-spacing: 0.1em;
+}
+.title-block__title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 20px;
+  color: var(--text);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* --- Meta card (ticket style) --- */
+.meta-card {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.meta-card__grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.meta-card__key {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  white-space: nowrap;
+}
+.meta-card__val {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.meta-card__val a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.meta-card__val a:hover { text-decoration: underline; }
+.meta-card__heat { color: var(--accent); letter-spacing: 2px; }
+.meta-card__tag {
+  display: inline-block;
+  padding: 1px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+/* --- Comparison --- */
+.comparison {
+  padding-top: 48px;
+}
+.comparison__title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.comparison__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.comparison__item {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.comparison__item-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  justify-content: space-between;
+}
+.comparison__item img {
+  width: 100%;
+  display: block;
+  cursor: zoom-in;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: lb-fade 0.2s ease;
+}
+@keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 2px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  opacity: 0.6;
+  cursor: pointer;
+  font-weight: 100;
+}
+.lightbox__close:hover { opacity: 1; }
+
+/* --- Classic (no structure) --- */
+.classic {
+  padding-top: 48px;
+}
+.classic__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+.classic__text {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* --- Copy bar --- */
+.copy-bar {
+  padding-top: 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 10px;
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 48px 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-colophon);
+}
+.footer a { color: inherit; text-decoration: none; }
+
+/* --- Gesture hint --- */
+.gesture-hint {
+  text-align: center;
+  padding: 12px 0 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  opacity: 0.5;
+}
+
+/* --- Nav arrows --- */
+.nav-arrows {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 32px;
+}
+.nav-arrows a {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav-arrows a:hover { color: var(--text); }
+
+.section__copy { text-align: right; margin-top: 12px; }
+.copy-btn {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.copy-btn:hover { color: var(--text); }
+.copy-btn--done { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- Nav -->
+  <nav class="nav">
+    <a class="nav__back" href="../index.html" id="backLink">← gallery</a>
+    <a class="nav__random" href="javascript:void(0)" onclick="randomPrompt()" title="随机">🎲</a>
+  </nav>
+  <hr class="nav__line">
+
+  <!-- Title -->
+  <div class="title-block">
+    <div class="title-block__num">#121</div>
+    <div class="title-block__title">复古扁平立体角色设定图</div>
+  </div>
+
+  <!-- Meta card -->
+  <div class="meta-card">
+    <div class="meta-card__grid">
+      <span class="meta-card__key">编号</span>
+      <span class="meta-card__val">#121</span>
+
+      <span class="meta-card__key">类型</span>
+      <span class="meta-card__val">
+        <span class="meta-card__tag">角色设计</span>
+        <span class="meta-card__tag">经典版</span>
+      </span>
+
+      <span class="meta-card__key">垫图</span>
+      <span class="meta-card__val">需要上传人物照片</span>
+
+      <span class="meta-card__key">热度</span>
+      <span class="meta-card__val"><span class="meta-card__heat">0</span></span>
+
+      <span class="meta-card__key">分类</span>
+      <span class="meta-card__val">角色设计</span>
+
+      <span class="meta-card__key">结构</span>
+      <span class="meta-card__val">经典版</span>
+
+      <span class="meta-card__key">核心创新</span>
+      <span class="meta-card__val">复古扁平立体 + 四视图角色设定板</span>
+
+      <span class="meta-card__key">原帖</span>
+      <span class="meta-card__val"><a href="https://x.com/AdrianPunk115/status/2076845458060935225" target="_blank">查看原帖 →</a></span>
+
+      <span class="meta-card__key">日期</span>
+      <span class="meta-card__val">2026-07-14</span>
+    </div>
+  </div>
+
+  <!-- Test images comparison -->
+  <div class="comparison">
+    <div class="comparison__title">🧪 模型对比测试</div>
+    <div class="comparison__grid">
+      <div class="comparison__item">
+        <div class="comparison__item-label">
+          <span>Nano Banana 2</span>
+          <span>✅已生成</span>
+        </div>
+        <img src="../assets/tests/adrian_gcli_121.jpg" alt="Nano Banana 2" loading="lazy">
+      </div>
+      <div class="comparison__item">
+        <div class="comparison__item-label">
+          <span>GPT Image 2</span>
+          <span>✅已生成</span>
+        </div>
+        <img src="../assets/tests/adrian_bizyair_121.png" alt="GPT Image 2" loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <!-- Classic prompt -->
+  <div class="classic">
+    <div class="classic__label">经典版（完整提示词）</div>
+    <div class="classic__text" id="full-text">请根据我上传的人物照片，生成一张"复古扁平立体角色设定图"。
+
+角色名称：{{填写名字或昵称}}
+
+把照片中的真人转化为可长期复用的个人IP角色，做成一张竖版角色设定板。整体采用复古扁平立体插画风：扁平为主，轻微立体，低细节，低饱和，柔和阴影，哑光质感，轻微复古颗粒，浅米白或暖白背景，版式干净，留白充足，像专业角色设计手册页。
+
+人物必须以我上传的照片为唯一参考，保留最有辨识度的特征，包括脸型、五官比例、眼睛气质、眉毛、鼻子、嘴唇、发型、发际线、年龄感、肤色、体型轮廓和整体气质。表现方式是扁平化角色转译，不要写实，不要二次元，不要潮玩，不要过度可爱，不要大头娃娃。
+
+服装参考原照片，可适度简化成更适合长期使用的固定角色造型。要求简洁、日常、有辨识度，减少复杂褶皱和真实布料纹理，不加无关品牌标志和多余配饰。
+
+固定版式：
+1. 顶部居中写"{{填写名字或昵称}}"
+2. 标题下方小字写"角色设定"
+3. 中上部放一个最大的主角色全身像，站在简洁圆形底座上，姿态自然放松
+4. 底部横向排列四个小角色视图，依次为：
+正面 / FRONT
+左侧 / LEFT SIDE
+背面 / BACK
+右侧 / RIGHT SIDE
+
+四视图必须保持完全一致：同一个发型、脸型、衣服、鞋子、配件、颜色和身体比例。
+
+不要左侧配件区，不要配色区，不要人物介绍，不要性格说明，不要长段文字，不要多余英文，不要乱码，不要复杂场景。
+
+最终输出为一张清晰、规整、可长期复用的个人IP角色设定图，比例为3:4或4:5。</div>
+    <div class="section__copy"><button class="copy-btn" onclick="copyText('full-text')">copy →</button></div>
+  </div>
+
+  <!-- Copy bar -->
+  <div class="copy-bar">
+    <button class="copy-btn" onclick="copyFullPrompt()">复制全部提示词</button>
+  </div>
+
+  <!-- Nav arrows -->
+  <div class="nav-arrows">
+    <a href="adrian-120-照片调色富士CC.html">← #120</a>
+    <a href="adrian-122-晴天奶油蓝.html">#122 →</a>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://x.com/AdrianPunk115" target="_blank">@AdrianPunk115</a>
+     · 07-14
+  </div>
+  <div class="gesture-hint">← swipe next · swipe back →</div>
+</div>
+
+<script>
+const PROMPT_DATA = ["121-复古扁平立体角色设定图", "122-晴天奶油蓝", "120-照片调色富士CC", "119-照片调色KodakEktar高饱和", "118-复古纪实感生日照片"];
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent.trim());
+  const btn = el.closest('.classic').querySelector('.copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = 'copy →'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+
+function copyFullPrompt() {
+  const text = document.querySelector('.classic__text');
+  if (text) navigator.clipboard.writeText(text.textContent.trim());
+  const btn = document.querySelector('.copy-bar .copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = '复制全部提示词'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+
+function randomPrompt() {
+  const slugs = PROMPT_DATA;
+  const current = window.location.pathname.split('/').pop().replace('.html', '');
+  const candidates = slugs.filter(s => s !== current);
+  if (candidates.length) window.location.href = candidates[Math.floor(Math.random() * candidates.length)] + '.html';
+}
+
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 80) {
+    if (dx < 0) {
+      const nextLink = document.querySelector('.nav-arrows a:last-child');
+      if (nextLink) nextLink.click();
+    } else {
+      window.location.href = '../index.html';
+    }
+  }
+});
+
+function openLightbox(src, alt) {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<span class="lightbox__close">&times;</span><img src="${src}" alt="${alt || ''}">`;
+  lb.addEventListener('click', e => { if (e.target === lb || e.target.classList.contains('lightbox__close')) lb.remove(); });
+  document.body.appendChild(lb);
+}
+
+document.querySelectorAll('.comparison__item img').forEach(img => {
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
+});
+</script>
+</body>
+</html>
