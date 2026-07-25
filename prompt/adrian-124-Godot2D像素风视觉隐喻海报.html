@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#124 Godot 2D 像素风视觉隐喻海报 · 提示词画廊</title>
+<style>
+:root {
+  --bg: #f7f5f2;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f2ef;
+  --border: #e8e4df;
+  --text: #5a5550;
+  --text-muted: #a09890;
+  --text-meta: #b8b0a8;
+  --broth: #f5f0eb;
+  --broth-border: #c4a87a;
+  --spice: #eff1f0;
+  --spice-border: #8ba8a4;
+  --catalyst: #f2eeeb;
+  --catalyst-border: #c0988a;
+  --avoid-text: #b07070;
+  --accent: #c4a87a;
+  --accent-colophon: #c4bba8;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Nav --- */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0 12px;
+}
+.nav__back {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav__back:hover { color: var(--text); }
+.nav__random {
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.4;
+  text-decoration: none;
+}
+.nav__line {
+  border: none;
+  border-top: 1px solid var(--accent);
+  opacity: 0.5;
+}
+
+/* --- Title block --- */
+.title-block {
+  padding-top: 48px;
+}
+.title-block__num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  letter-spacing: 0.1em;
+}
+.title-block__title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 20px;
+  color: var(--text);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* --- Meta card (ticket style) --- */
+.meta-card {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.meta-card__grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.meta-card__key {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  white-space: nowrap;
+}
+.meta-card__val {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.meta-card__val a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.meta-card__val a:hover { text-decoration: underline; }
+.meta-card__heat { color: var(--accent); letter-spacing: 2px; }
+.meta-card__tag {
+  display: inline-block;
+  padding: 1px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+/* --- Comparison --- */
+.comparison {
+  padding-top: 48px;
+}
+.comparison__title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.comparison__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.comparison__item {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.comparison__item-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  justify-content: space-between;
+}
+.comparison__item img {
+  width: 100%;
+  display: block;
+  cursor: zoom-in;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: lb-fade 0.2s ease;
+}
+@keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 2px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  opacity: 0.6;
+  cursor: pointer;
+  font-weight: 100;
+}
+.lightbox__close:hover { opacity: 1; }
+.comparison__item--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  opacity: 0.5;
+}
+.comparison__single {
+  max-width: 50%;
+}
+
+/* --- Section (broth/spice/catalyst) --- */
+.section {
+  padding-top: 48px;
+}
+.section__inner {
+  padding: 20px 24px;
+  border-radius: 2px;
+}
+.section--broth .section__inner { background: var(--broth); border-left: 1px solid var(--broth-border); }
+.section--spice .section__inner { background: var(--spice); border-left: 1px solid var(--spice-border); }
+.section--catalyst .section__inner { background: var(--catalyst); border-left: 1px solid var(--catalyst-border); }
+
+.section__label {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.section__text {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.section__copy {
+  text-align: right;
+  margin-top: 12px;
+}
+.copy-btn {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.copy-btn:hover { color: var(--text); }
+.copy-btn--done { color: var(--accent); }
+
+/* --- Classic (no structure) --- */
+.classic {
+  padding-top: 48px;
+}
+.classic__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+.classic__text {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* --- Info blocks (scenes, spice example, innovation) --- */
+.info-block {
+  padding-top: 32px;
+}
+.info-block__title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.info-block__text {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text-muted);
+}
+.info-block__code {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --- Avoid list --- */
+.avoid {
+  padding-top: 32px;
+}
+.avoid__title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-meta);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.avoid__list {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--avoid-text);
+  line-height: 2;
+}
+
+/* --- Copy bar --- */
+.copy-bar {
+  padding-top: 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 10px;
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 48px 0 24px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-colophon);
+}
+.footer a { color: inherit; text-decoration: none; }
+
+/* --- Gesture hint --- */
+.gesture-hint {
+  text-align: center;
+  padding: 12px 0 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-meta);
+  opacity: 0.5;
+}
+
+/* --- Nav arrows --- */
+.nav-arrows {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 32px;
+}
+.nav-arrows a {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.nav-arrows a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- Nav -->
+  <nav class="nav">
+    <a class="nav__back" href="../index.html" id="backLink">← gallery</a>
+    <a class="nav__random" href="javascript:void(0)" onclick="randomPrompt()" title="随机">🎲</a>
+  </nav>
+  <hr class="nav__line">
+
+  <!-- Title -->
+  <div class="title-block">
+    <div class="title-block__num">#124</div>
+    <div class="title-block__title">Godot 2D 像素风视觉隐喻海报</div>
+  </div>
+
+  <!-- Meta card -->
+  <div class="meta-card">
+    <div class="meta-card__grid">
+      <span class="meta-card__key">编号</span>
+      <span class="meta-card__val">#124</span>
+
+      <span class="meta-card__key">类型</span>
+      <span class="meta-card__val">
+        <span class="meta-card__tag">游戏视觉</span>
+        <span class="meta-card__tag">经典版</span>
+      </span>
+
+      <span class="meta-card__key">垫图</span>
+      <span class="meta-card__val">无</span>
+
+      <span class="meta-card__key">热度</span>
+      <span class="meta-card__val"><span class="meta-card__heat">0</span></span>
+
+      <span class="meta-card__key">分类</span>
+      <span class="meta-card__val">游戏视觉</span>
+
+      <span class="meta-card__key">结构</span>
+      <span class="meta-card__val"></span>
+
+      <span class="meta-card__key">核心创新</span>
+      <span class="meta-card__val">视觉隐喻 + 游戏机制表达</span>
+
+      <span class="meta-card__key">原帖</span>
+      <span class="meta-card__val"><a href="https://x.com/AdrianPunk115/status/2080578503960064259" target="_blank">查看原帖 →</a></span>
+
+      <span class="meta-card__key">日期</span>
+      <span class="meta-card__val">2026-07-24</span>
+    </div>
+  </div>
+
+  <!-- Test images comparison -->
+  <div class="comparison">
+    <div class="comparison__title">🧪 模型对比测试</div>
+    <div class="comparison__grid">
+      <div class="comparison__item comparison__item--empty">
+        <span>Nano Banana 2 · 待生成</span>
+      </div>
+      <div class="comparison__item comparison__item--empty">
+        <span>GPT Image 2 · 待生成</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full prompt (classic) -->
+  <div class="classic">
+    <div class="classic__label">经典版（非汤底结构）</div>
+    <div class="classic__text" id="full-text">你是一名顶级视觉隐喻设计师、独立游戏美术总监和海报设计师。
+
+你的任务：
+根据用户提供的一句话主题，设计一张具有思想表达的「Godot 2D 像素风视觉隐喻海报」。
+
+不要简单把文字画出来。
+
+你需要先理解文字背后的：
+- 核心观点
+- 情绪
+- 矛盾关系
+- 隐藏含义
+
+然后创造一个具有象征意义的游戏世界，用一个强烈的视觉隐喻表达主题。
+
+---
+
+【用户输入】
+
+主题：
+
+{{填写主题}}
+
+图片比例：
+
+{{填写比例，例如：16:9 / 3:2 / 4:5 / 9:16 / 1:1 / 自定义}}
+
+用途：
+
+{{填写用途，例如：公众号封面 / X封面 / 小红书封面 / 视频封面 / 海报}}
+
+---
+
+# 一、主题理解
+
+在内部分析主题，不展示分析过程。
+
+提取：
+
+- 表面含义
+- 深层含义
+- 核心冲突
+- 主要情绪
+- 最适合视觉化的关系
+
+不要试图表达所有信息。
+
+一张图只表达一个最重要的观点。
+
+---
+
+# 二、视觉隐喻设计
+
+不要直接绘制主题文字。
+
+必须完成：
+
+抽象概念 → 具体场景 → 游戏机制 → 视觉隐喻
+
+将主题转化成一个可以被玩家体验的游戏场景。
+
+优先寻找以下视觉关系：
+
+## 1. 方向冲突
+
+表现：
+- 努力但方向错误
+- 越努力越远
+- 追逐错误目标
+
+可使用：
+道路、传送带、反方向箭头、移动平台、消失的终点。
+
+## 2. 距离隐喻
+
+表现：
+- 目标遥不可及
+- 时间积累
+- 长期主义
+
+可使用：
+远处城堡、山顶、出口、阶梯、桥梁。
+
+## 3. 尺度反差
+
+表现：
+- 个体面对巨大系统
+- 人与AI、时代、规则的关系
+
+可使用：
+巨大机器、巨塔、城市、怪物、小人物。
+
+## 4. 循环困境
+
+表现：
+- 内耗
+- 重复劳动
+- 无法突破
+
+可使用：
+循环道路、无限楼梯、重复房间、闭环地图。
+
+## 5. 光暗对比
+
+表现：
+- 希望
+- 觉醒
+- 选择
+
+可使用：
+黑暗空间中的光源、出口、火焰、森林入口。
+
+## 6. 建造与积累
+
+表现：
+- 知识
+- 成长
+- 复利
+- 长期价值
+
+可使用：
+城堡、图书馆、基地、升级系统、资源积累。
+
+## 7. 信息与注意力
+
+表现：
+- AI时代
+- 信息洪流
+- 专注力
+
+可使用：
+数据洪流、通知怪物、安静森林、隐藏区域。
+
+---
+
+# 三、隐喻选择规则
+
+内部构思多个方案。
+
+最终只选择：
+
+- 最容易理解的
+- 最有视觉冲击力的
+- 最适合单张海报的
+- 最能产生情绪反差的
+
+不要加入多个主要隐喻。
+
+不要做复杂故事。
+
+观众第一眼必须理解：
+
+"这个画面为什么代表这个主题。"
+
+---
+
+# 四、画面比例适配
+
+根据用户输入比例重新设计构图。
+
+不要简单裁剪。
+
+## 横版比例（16:9 / 3:2）
+
+适合：
+- 封面
+- 视频标题图
+- 文章头图
+
+构图：
+- 强调左右关系
+- 展示完整世界
+- 人物与目标形成距离
+- 标题放置在留白区域
+
+## 竖版比例（4:5 / 9:16）
+
+适合：
+- 信息流
+- 手机封面
+- 社交媒体
+
+构图：
+- 强调上下空间
+- 人物成长路径
+- 目标位于远方
+- 标题位于顶部或中上区域
+
+## 正方形比例（1:1）
+
+适合：
+- 品牌视觉
+- 卡片封面
+
+构图：
+- 中心视觉符号
+- 强烈识别度
+- 简洁构图
+
+## 自定义比例
+
+根据比例重新设计：
+- 标题位置
+- 角色比例
+- 场景空间
+- 视觉动线
+
+禁止套用固定模板。
+
+---
+
+# 五、海报构图要求
+
+画面必须包含：
+
+- 一个主要角色
+- 一个明确动作
+- 一个核心象征物
+- 一个目标或阻碍
+- 一个视觉焦点
+- 合理留白区域
+
+构图方式：
+
+可使用：
+
+- 左文字右场景
+- 上文字下场景
+- 中心压迫构图
+- 远近距离构图
+- 对角线运动构图
+- 环形循环构图
+
+画面必须像真正的游戏宣传封面。
+
+不是截图。
+
+不是概念草图。
+
+不是普通插画。
+
+---
+
+# 六、文字设计
+
+用户输入的主题必须出现在画面中。
+
+主标题：
+
+"{{主题}}"
+
+副标题（可选）：
+
+"{{副标题}}"
+
+文字必须使用中文。
+文字必须有像素感，与像素风画面统一。
+文字位置不能破坏视觉焦点。
+
+---
+
+# 七、像素风格要求
+
+整体：
+- Godot 2D 像素风
+- 16-bit 复古像素
+- 清晰像素网格
+- 有限调色板（每场景≤16色）
+- 强轮廓线
+- 简化细节
+- 像独立游戏宣传封面</div>
+    <div class="section__copy"><button class="copy-btn" onclick="copyText('full-text')">copy →</button></div>
+  </div>
+
+  <!-- Copy bar -->
+  <div class="copy-bar">
+    <button class="copy-btn" onclick="copyFullPrompt()">复制全部提示词</button>
+  </div>
+
+  <!-- Nav arrows -->
+  <div class="nav-arrows">
+    <a href="adrian-123-照片调色VSCOA6自然绿.html">← #123</a>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://x.com/AdrianPunk115" target="_blank">@AdrianPunk115</a>
+     · 07-24
+  </div>
+  <div class="gesture-hint">← swipe next · swipe back →</div>
+</div>
+
+<script>
+const PROMPT_DATA = ["124-Godot 2D 像素风视觉隐喻海报", "123-照片调色VSCOA6自然绿", "122-晴天奶油蓝", "121-复古扁平立体角色设定图", "120-照片调色富士CC", "119-照片调色KodakEktar高饱和", "118-复古纪实感生日照片", "117-水墨节气海报", "116-民国名媛淡彩仕女", "115-高密度手绘线描", "114-玻璃雾化封面", "113-同心圆波纹视觉", "112-撕开一道缝", "111-秩序切割实验字体", "110-汉字异构字体设计", "109-水墨极简字体海报", "108-像素肌理电影海报", "107-窄窗破框人像", "106-残影拖影人像", "adrian-106-万物皆可像素头像", "105-X字负形人像", "adrian-105-AI宠物图拍立得纹身设计稿", "104-极简黑色手绘线描", "adrian-104-我的世界方块风", "103-儿童马克笔手绘风·图片转绘", "adrian-103-永远做个小孩", "102-笨拙手绘·稚拙纸面", "adrian-102-凌乱打圈蜡笔画", "101-东方节庆·水墨节气海报", "adrian-101-麦肯锡风格咨询视觉", "100-线条美学·高密度线描", "adrian-100-纪念碑刻字", "99-民国名媛·人像", "adrian-99-空间导视字", "98-玻璃雾化·作品集封面秩序", "adrian-98-水泥构筑字", "97-童话版画式图像·图片转绘", "adrian-97-建筑立面字", "96-文字重复+核心大元素", "adrian-96-电竞战队字", "95-图文嵌套·文字重复+材质锚点", "adrian-95-格斗力量字", "94-大字招牌·竖版商业海报", "adrian-94-赛车速度字", "93-像素微光·竖版结构视觉", "adrian-93-球衣号码字", "92-曲线风格字体·双色轨道字形", "adrian-92-机械切割字", "91-秀气线稿·纸本线描+彩色批注", "adrian-91-工业铭牌字", "90-诗性编辑视觉·核心词明暗", "adrian-90-机甲装甲字", "89-童话版画·风格转换", "adrian-89-重工机械字", "88-撕开一道缝·纸面裂隙", "adrian-88-商务签批体", "87-字骨游线·宋体创新字体设计", "adrian-87-批注手写体", "86-镜头三分构图·取景框视觉", "adrian-86-学生衡水体", "85-品牌菜单页-温暖纸感", "adrian-85-钢笔楷书字", "adrian-84-电商促销字", "83-上下双场-编辑广告式", "adrian-83-便利贴字", "adrian-82-夜市菜单字", "81-纸雾层景-雾中纸切", "adrian-81-灯管字", "80-透明介质-湿润折射", "adrian-80-剪纸拼贴字", "79-字体变实体-建筑化大字报", "adrian-79-零食包装字", "adrian-78-乐高玩具体", "77-线性运动场-同源线团显形", "adrian-77-儿童绘本体", "76-像素故障风-马赛克台阶", "adrian-76-东方海报", "75-汉字意象化设计", "adrian-75-潮流篆意体", "74-旅行记忆窗口·高铁窗景", "adrian-74-国风牌匾体", "73-三角形跳出窗口·自定义几何裁切", "adrian-73-东方瘦金体体", "72-局部破框·几何情绪窗口", "adrian-72-机车西部字", "71-光的容器·中式窗棂剪影海报", "adrian-71-赏金字", "70-会流动会发光会呼吸·水彩空气感", "adrian-70-通缉令字体", "69-童趣手绘·情绪文案壁纸", "adrian-69-西部牛仔标题体", "68-丝网印刷风·被时间保存的印刷物", "adrian-68-禅意体", "67-东方水墨动画气质·课本插画", "adrian-67-行书体", "66-年轮·知识生命系统", "adrian-66-狂草书法体", "65-PPT一键成型·无限风格换肤", "adrian-65-报头提题体", "64-景深美学·节气城市问候卡片", "adrian-64-华丽哥特饰字", "63-东方水彩风·早安晚安问候卡片", "adrian-63-黑金属尖刺字", "62-东方留白感·万能知识图鉴汤底", "adrian-62-中世纪字", "61-纪念碑谷风格·批量24节气卡片", "adrian-61-暗黑标题字", "60-琥珀温润材质PPT·岁月沉积美学", "adrian-60-复古故事字", "59-蓝白颗粒文字背景PPT·现代编辑感", "adrian-59-复古广告字", "58-万能PPT·东方编辑感美学", "adrian-58-霓虹旧街", "57-古画还原·极简版提示词", "adrian-57-老电影字", "56-穿衣打扮·泳衣穿搭提案", "adrian-56-方块模块字", "55-山海经古文古画实景摄影", "adrian-55-像素字", "54-万能信息简化图", "adrian-54-街机游戏字", "53-高桥流海报设计", "adrian-53-复古游戏字", "52-电子零配件变乐高·五金创意图", "adrian-52-儿童活动字", "51-数据转图表·奶油风可视化", "adrian-51-创意课程字", "50-十二星座IP图·34网格系列", "adrian-50-搞笑封面字", "49-涂鸦变抱枕·亲子艺术衍生品", "adrian-49-趣味标题字", "48-十二生肖IP图·34网格系列", "adrian-48-赛博断裂字", "47-一字美学·中式秩序美感", "adrian-47-虚拟空间字", "46-通用邀请函·万能情境兼容", "adrian-46-液态未来字", "45-手相升级版·垂直提问万能版", "adrian-45-科技标题字", "44-时尚陈列型信息海报", "adrian-44-强观点夸张字", "43-教学PPT万能海报·治愈系配色", "adrian-43-表情包标题字", "42-城市拼音海报·收藏级主题视觉", "adrian-42-爆款封面字", "41-文本转视觉·长文速览海报", "adrian-41-强冲击标题字", "40-胎儿四维照片·AI推测还原长相", "adrian-40-创作者标题字", "39-留白线条·审美疲劳的洗眼器", "adrian-39-概念实验字", "38-线稿城市海报·人民币般美感", "adrian-38-展览字", "37-极简线条头像·山顶洞人进化版", "adrian-37-抽象艺术字", "36-漫画日记", "adrian-36-爆裂摇滚涂鸦字", "35-记忆忠告概念卡片", "adrian-35-泡泡潮流涂鸦字", "34-植物识别", "adrian-34-青年观点字", "33-电商一键整套详情页", "adrian-33-街头涂鸦字", "32-小红书卡片系列海报", "adrian-32-童趣涂鸦体", "31-流程图信息图重构", "adrian-31-粗描海报体", "30-看面相·垂直提问版", "adrian-30-插画装饰体", "29-中文字形设计", "adrian-29-轮廓手绘体", "28-清冷油墨风", "adrian-28-艺术曲线字", "27-电商广告-Banner", "adrian-27-音乐律动字", "26-印象派信息图", "adrian-26-女性美学字", "25-天空变萌萌", "adrian-25-柔和曲线字", "24-抽象头像", "adrian-24-情绪手写字", "23-乐高文字", "adrian-23-个人签名字", "22-微缩模型", "adrian-22-成长笔记字", "21-线条艺术", "adrian-21-清新手迹字", "20-中式窗景", "adrian-20-深度专栏字", "19-天空手绘修图", "adrian-19-轻奢封面字", "18-报纸头条", "adrian-18-商业衬线体", "17-Logo-设计", "adrian-17-杂志衬线体", "16-景点建筑信息图", "adrian-16-优雅单线字", "15-名著经典海报", "adrian-15-科技线框字", "14-建筑速写知识图", "adrian-14-草图单线体", "13-国宝文物图鉴", "adrian-13-连续线稿体", "12-国风唐诗宋词", "adrian-12-未来细线字", "11-城市宣传海报", "adrian-11-高级知识字", "10-进化史信息图", "adrian-10-温柔细线字", "9-情头·万物可情头", "adrian-9-轻奢细线字", "8-抽象圆润风", "adrian-8-科技简洁字", "7-抽象表情包", "adrian-7-清爽标题字", "6-以假乱真·纪实摄影", "adrian-6-现代知识字", "5-字体美学·单词视觉化", "adrian-5-极简品牌字", "4-自媒体封面", "adrian-4-先锋设计字", "3-信息卡片·万能推荐", "adrian-3-都市潮流字", "2-面相算命", "adrian-2-高级杂志字", "1-掌纹算命", "adrian-1-潮流品牌字"];
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent.trim());
+  const btn = el.closest('.section__inner, .classic').querySelector('.copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = 'copy →'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+
+function copyFullPrompt() {
+  const text = document.querySelector('.classic__text, .section--broth .section__text');
+  if (text) navigator.clipboard.writeText(text.textContent.trim());
+  const btn = document.querySelector('.copy-bar .copy-btn');
+  btn.textContent = '✓ copied';
+  btn.classList.add('copy-btn--done');
+  setTimeout(() => { btn.textContent = '复制全部提示词'; btn.classList.remove('copy-btn--done'); }, 1500);
+}
+
+function randomPrompt() {
+  const slugs = PROMPT_DATA;
+  const current = window.location.pathname.split('/').pop().replace('.html', '');
+  const candidates = slugs.filter(s => s !== current);
+  if (candidates.length) window.location.href = candidates[Math.floor(Math.random() * candidates.length)] + '.html';
+}
+
+// Swipe gestures
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 80) {
+    if (dx < 0) {
+      const nextLink = document.querySelector('.nav-arrows a:last-child');
+      if (nextLink) nextLink.click();
+    } else {
+      window.location.href = '../index.html' + (localStorage.getItem('pg_tab') ? '' : '');
+    }
+  }
+});
+
+// Lightbox
+function openLightbox(src, alt) {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<span class="lightbox__close">&times;</span><img src="${src}" alt="${alt || ''}">`;
+  lb.addEventListener('click', e => { if (e.target === lb || e.target.classList.contains('lightbox__close')) lb.remove(); });
+  document.body.appendChild(lb);
+}
+
+document.querySelectorAll('.comparison__item img').forEach(img => {
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
+});
+</script>
+</body>
+</html>
